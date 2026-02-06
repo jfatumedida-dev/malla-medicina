@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Malla Medicina UBA</title>
+
+<style>
+body{
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  background:#f4f6fb;
+  margin:0;
+  padding:20px;
+}
+
+h1{
+  text-align:center;
+  color:#444;
+}
+
+.grid{
+  display:flex;
+  gap:18px;
+  overflow-x:auto;
+}
+
+.column{
+  background:white;
+  border-radius:14px;
+  padding:15px;
+  min-width:260px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.08);
+}
+
+.column h2{
+  text-align:center;
+  color:#5b5b8a;
+}
+
+.subject{
+  background:#e6ebff;
+  margin:6px 0;
+  padding:8px;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:14px;
+  transition:0.2s;
+}
+
+.subject:hover{ transform:scale(1.03); }
+
+.approved{
+  background:#c8f7d6;
+  text-decoration:line-through;
+}
+
+.locked{
+  background:#eee;
+  color:#888;
+  cursor:not-allowed;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Malla Interactiva Medicina UBA</h1>
+<div class="grid" id="grid"></div>
+
+<script>
+const STORAGE_KEY="med_uba_progress";
+
+let progress=JSON.parse(localStorage.getItem(STORAGE_KEY))||{};
+
+function save(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(progress)); }
+function approved(id){ return progress[id]===true; }
+
+const subjects=[
+
+// CBC
+{id:"quimica",name:"Química",col:"CBC",req:[]},
+{id:"sociedad",name:"Int. Sociedad y Estado",col:"CBC",req:[]},
+{id:"ipc",name:"Int. Pensamiento Científico",col:"CBC",req:[]},
+{id:"matematica",name:"Matemática",col:"CBC",req:[]},
+{id:"fisica",name:"Física e Int. Biofísica",col:"CBC",req:[]},
+{id:"biologia",name:"Biología e Int. Biología Celular",col:"CBC",req:[]},
+
+// Biomédico 1
+{id:"anatomia",name:"Anatomía",col:"Biomédico 1°",req:["CBC"]},
+{id:"histologia",name:"Histología",col:"Biomédico 1°",req:["CBC"]},
+{id:"embriologia",name:"Embriología",col:"Biomédico 1°",req:["CBC"]},
+{id:"genetica",name:"Biología Molecular y Genética",col:"Biomédico 1°",req:["CBC"]},
+
+// Biomédico 2
+{id:"fisiologia",name:"Fisiología y Biofísica",col:"Biomédico 2°",req:["anatomia","histologia"]},
+{id:"bioquimica",name:"Bioquímica",col:"Biomédico 2°",req:["anatomia","histologia"]},
+{id:"inmunologia",name:"Inmunología",col:"Biomédico 2°",req:["anatomia","histologia"]},
+{id:"microbiologia",name:"Microbiología",col:"Biomédico 2°",req:["inmunologia","bioquimica"]},
+
+// Complementarias
+{id:"saludmental",name:"Salud Mental",col:"Complementarias",req:[]},
+{id:"saludpublica",name:"Salud Pública",col:"Complementarias",req:[]},
+{id:"bioetica",name:"Bioética",col:"Complementarias",req:[]},
+{id:"ingles",name:"Inglés Técnico",col:"Complementarias",req:[]},
+
+// Clínico 3
+{id:"medicinaA",name:"Medicina A (Semiología)",col:"3° Año",req:["BIOMEDICO"]},
+{id:"patologia",name:"Patología",col:"3° Año",req:["BIOMEDICO"]},
+{id:"farmaco1",name:"Farmacología I",col:"3° Año",req:["BIOMEDICO"]},
+
+// Clínico extra
+{id:"toxico",name:"Toxicología",col:"Ciclo Clínico",req:["farmaco1"]},
+{id:"farmaco2",name:"Farmacología II",col:"Ciclo Clínico",req:["farmaco1","medicinaA"]},
+{id:"legal",name:"Medicina Legal y Deontología",col:"Ciclo Clínico",req:[]},
+
+// 4° Clínicas
+{id:"medicinaB",name:"Medicina B",col:"4° Año",req:["medicinaA","patologia"]},
+{id:"nutricion",name:"Nutrición",col:"4° Año",req:["medicinaA","patologia"]},
+{id:"derma",name:"Dermatología",col:"4° Año",req:["medicinaA","patologia"]},
+{id:"infecto",name:"Infectología",col:"4° Año",req:["medicinaA","patologia"]},
+{id:"neumo",name:"Neumonología",col:"4° Año",req:["medicinaA","patologia"]},
+{id:"neuro",name:"Neurología",col:"4° Año",req:["medicinaA","patologia"]},
+{id:"imagenes",name:"Diagnóstico por Imágenes",col:"4° Año",req:["medicinaA","patologia"]},
+{id:"psiquiatria",name:"Psiquiatría",col:"4° Año",req:["medicinaA","patologia","saludmental"]},
+
+// 5° Quirúrgicas
+{id:"pediatria",name:"Pediatría",col:"5° Año",req:["medicinaA","patologia"]},
+{id:"obste",name:"Obstetricia",col:"5° Año",req:["medicinaA","patologia"]},
+{id:"gine",name:"Ginecología",col:"5° Año",req:["medicinaA","patologia"]},
+{id:"cirugia",name:"Cirugía General",col:"5° Año",req:["medicinaA","patologia"]},
+{id:"uro",name:"Urología",col:"5° Año",req:["medicinaA","patologia"]},
+{id:"trauma",name:"Ortopedia-Traumatología",col:"5° Año",req:["medicinaA","patologia"]},
+{id:"oftalmo",name:"Oftalmología",col:"5° Año",req:["medicinaA","patologia"]},
+{id:"orL",name:"Otorrinolaringología",col:"5° Año",req:["medicinaA","patologia"]},
+{id:"neurocir",name:"Neurocirugía",col:"5° Año",req:["medicinaA","patologia"]},
+
+// PFO
+{id:"familiar",name:"Medicina Familiar",col:"PFO",req:["ALL"]},
+{id:"emergen",name:"Emergentología",col:"PFO",req:["ALL"]},
+{id:"comunitaria",name:"Prácticas Comunitarias",col:"PFO",req:["ALL"]},
+];
+
+// --- REGLAS ESPECIALES ---
+
+function isCBCComplete(){
+  return subjects.filter(s=>s.col==="CBC").every(s=>approved(s.id));
+}
+
+function isBiomedicoComplete(){
+  return subjects.filter(s=>s.col.includes("Biomédico")).every(s=>approved(s.id));
+}
+
+function isAllComplete(){
+  return subjects.every(s=>approved(s.id));
+}
+
+function isUnlocked(sub){
+  return sub.req.every(r=>{
+    if(r==="CBC") return isCBCComplete();
+    if(r==="BIOMEDICO") return isBiomedicoComplete();
+    if(r==="ALL") return isAllComplete();
+    return approved(r);
+  });
+}
+
+function missingText(sub){
+  let miss=sub.req.filter(r=>{
+    if(r==="CBC") return !isCBCComplete();
+    if(r==="BIOMEDICO") return !isBiomedicoComplete();
+    if(r==="ALL") return !isAllComplete();
+    return !approved(r);
+  });
+  if(miss.includes("CBC")) return "Completar CBC";
+  if(miss.includes("BIOMEDICO")) return "Completar ciclo biomédico";
+  if(miss.includes("ALL")) return "Completar toda la carrera";
+  return "Falta: "+miss.join(", ");
+}
+
+// --- RENDER ---
+
+function render(){
+  const grid=document.getElementById("grid");
+  grid.innerHTML="";
+  const cols=[...new Set(subjects.map(s=>s.col))];
+
+  cols.forEach(c=>{
+    const colDiv=document.createElement("div");
+    colDiv.className="column";
+    colDiv.innerHTML=`<h2>${c}</h2>`;
+
+    subjects.filter(s=>s.col===c).forEach(sub=>{
+      const div=document.createElement("div");
+      div.className="subject";
+      div.innerText=sub.name;
+
+      if(approved(sub.id)){
+        div.classList.add("approved");
+      }else if(!isUnlocked(sub)){
+        div.classList.add("locked");
+        div.title=missingText(sub);
+      }
+
+      div.onclick=()=>{
+        if(!isUnlocked(sub)) return;
+        progress[sub.id]=!approved(sub.id);
+        save();
+        render();
+      };
+
+      colDiv.appendChild(div);
+    });
+
+    grid.appendChild(colDiv);
+  });
+}
+
+render();
+</script>
+</body>
+</html>
