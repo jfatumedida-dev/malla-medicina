@@ -6,72 +6,80 @@
 
 <style>
 body{
-  font-family:'Segoe UI', Tahoma, sans-serif;
-  background:#e9f7f6;
+  font-family:'Segoe UI',sans-serif;
+  background:#e8fbf9;
   margin:0;
   padding:20px;
-  color:#2b4c4b;
+  color:#214c4c;
 }
 
 header{
-  display:flex;
-  align-items:center;
-  gap:15px;
-  justify-content:center;
-  margin-bottom:20px;
+  text-align:center;
+  margin-bottom:15px;
 }
 
 header img{
-  height:60px;
+  height:70px;
 }
 
 h1{
-  margin:0;
-  color:#1f6f73;
+  margin:5px 0;
+  color:#1aa7a1;
 }
 
-.stickers{
-  text-align:center;
-  font-size:28px;
-  margin-bottom:10px;
+/* stickers */
+.sticker{
+  position:fixed;
+  font-size:26px;
+  opacity:0.15;
+  pointer-events:none;
 }
+.s1{top:30px;left:30px;}
+.s2{top:200px;right:40px;}
+.s3{bottom:50px;left:60px;}
+.s4{bottom:80px;right:80px;}
+.s5{top:400px;left:20px;}
 
 .grid{
   display:flex;
-  gap:18px;
+  gap:16px;
   overflow-x:auto;
 }
 
-.column{
-  background:white;
-  border-radius:14px;
-  padding:12px;
-  min-width:250px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.08);
-  border-top:8px solid #35c9c4;
+.col{
+  min-width:260px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
 }
 
-.column h2{
+.block{
+  background:white;
+  border-radius:14px;
+  padding:10px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.08);
+  border-top:8px solid #27d3cd;
+}
+
+.block h3{
+  margin:3px 0 8px 0;
   text-align:center;
-  font-size:16px;
-  margin:5px 0 10px 0;
-  color:#1f6f73;
+  color:#1aa7a1;
+  font-size:15px;
 }
 
 .subject{
-  background:#d8f4f2;
-  margin:6px 0;
-  padding:7px;
+  background:#d5f6f3;
+  border:1px solid #b6ece8;
   border-radius:8px;
+  padding:6px;
+  margin:5px 0;
   cursor:pointer;
   font-size:13px;
-  transition:0.2s;
-  border:1px solid #b7e7e4;
+  transition:0.15s;
 }
 
-.subject:hover{
-  transform:scale(1.03);
-}
+.subject:hover{transform:scale(1.03);}
 
 .approved{
   background:#b8f0c9;
@@ -79,7 +87,7 @@ h1{
 }
 
 .locked{
-  background:#eeeeee;
+  background:#eee;
   color:#888;
   cursor:not-allowed;
 }
@@ -89,19 +97,21 @@ h1{
 <body>
 
 <header>
-  <!-- CAMBIÁ ESTA URL POR EL LOGO QUE QUIERAS -->
-  <img src="https://upload.wikimedia.org/wikipedia/commons/1/1a/UBA.svg">
-  <h1>Plan de Estudios Medicina UBA</h1>
+<img src="https://upload.wikimedia.org/wikipedia/commons/1/1a/UBA.svg">
+<h1>Plan de Estudios – Medicina UBA</h1>
 </header>
 
-<div class="stickers">
-  🩺 💉 🧬 🧠 ❤️ 🧫
-</div>
+<!-- stickers -->
+<div class="sticker s1">🩺</div>
+<div class="sticker s2">💉</div>
+<div class="sticker s3">🧬</div>
+<div class="sticker s4">🧠</div>
+<div class="sticker s5">❤️</div>
 
 <div class="grid" id="grid"></div>
 
 <script>
-const KEY="medicina_uba_progress";
+const KEY="mallaMedUBA";
 let progress=JSON.parse(localStorage.getItem(KEY))||{};
 function save(){localStorage.setItem(KEY,JSON.stringify(progress));}
 function ok(id){return progress[id]===true;}
@@ -109,130 +119,134 @@ function ok(id){return progress[id]===true;}
 const subjects=[
 
 // CBC
-{id:"quimica",name:"Química",col:"CBC",req:[]},
-{id:"sociedad",name:"Int. Sociedad y Estado",col:"CBC",req:[]},
-{id:"ipc",name:"Int. Pensamiento Científico",col:"CBC",req:[]},
-{id:"matematica",name:"Matemática",col:"CBC",req:[]},
-{id:"fisica",name:"Física e Int. Biofísica",col:"CBC",req:[]},
-{id:"biologia",name:"Biología e Int. Biología Celular",col:"CBC",req:[]},
+{id:"quimica",name:"Química",group:"cbc"},
+{id:"sociedad",name:"Sociedad y Estado",group:"cbc"},
+{id:"ipc",name:"Pensamiento Científico",group:"cbc"},
+{id:"matematica",name:"Matemática",group:"cbc"},
+{id:"fisica",name:"Biofísica",group:"cbc"},
+{id:"biologia",name:"Biología Celular",group:"cbc"},
 
-// BIOMEDICO 1
-{id:"anatomia",name:"Anatomía",col:"Biomédico 1°",req:["CBC"]},
-{id:"histologia",name:"Histología",col:"Biomédico 1°",req:["CBC"]},
-{id:"embriologia",name:"Embriología",col:"Biomédico 1°",req:["CBC"]},
-{id:"genetica",name:"Biología Molecular y Genética",col:"Biomédico 1°",req:["CBC"]},
+// Biomédico 1
+{id:"anatomia",name:"Anatomía",req:["CBC"],group:"bio1"},
+{id:"histologia",name:"Histología",req:["CBC"],group:"bio1"},
+{id:"embriologia",name:"Embriología",req:["CBC"],group:"bio1"},
+{id:"genetica",name:"Genética",req:["CBC"],group:"bio1"},
 
-// BIOMEDICO 2
-{id:"fisiologia",name:"Fisiología y Biofísica",col:"Biomédico 2°",req:["anatomia","histologia"]},
-{id:"bioquimica",name:"Bioquímica",col:"Biomédico 2°",req:["anatomia","histologia"]},
-{id:"inmunologia",name:"Inmunología",col:"Biomédico 2°",req:["anatomia","histologia"]},
-{id:"microbiologia",name:"Microbiología",col:"Biomédico 2°",req:["inmunologia","bioquimica"]},
+// Biomédico 2
+{id:"fisiologia",name:"Fisiología y Biofísica",req:["anatomia","histologia"],group:"bio2"},
+{id:"bioquimica",name:"Bioquímica",req:["anatomia","histologia"],group:"bio2"},
+{id:"inmunologia",name:"Inmunología",req:["anatomia","histologia"],group:"bio2"},
+{id:"microbiologia",name:"Microbiología",req:["inmunologia","bioquimica"],group:"bio2"},
 
-// COMPLEMENTARIAS
-{id:"saludmental",name:"Salud Mental",col:"Complementarias",req:[]},
-{id:"saludpublica",name:"Salud Pública",col:"Complementarias",req:[]},
-{id:"bioetica",name:"Bioética",col:"Complementarias",req:[]},
-{id:"ingles",name:"Inglés Técnico",col:"Complementarias",req:[]},
+// Complementarias
+{id:"saludmental",name:"Salud Mental",group:"comp"},
+{id:"saludpublica",name:"Salud Pública",group:"comp"},
+{id:"bioetica",name:"Bioética",group:"comp"},
+{id:"ingles",name:"Inglés Técnico",group:"comp"},
 
-// 3° AÑO
-{id:"medicinaA",name:"Medicina A (Semiología)",col:"3° Año",req:["BIOMED"]},
-{id:"patologia",name:"Patología",col:"3° Año",req:["BIOMED"]},
-{id:"farmaco1",name:"Farmacología I",col:"3° Año",req:["BIOMED"]},
+// 3
+{id:"medA",name:"Medicina A",req:["BIOMED"],group:"y3"},
+{id:"patologia",name:"Patología",req:["BIOMED"],group:"y3"},
+{id:"farm1",name:"Farmacología I",req:["BIOMED"],group:"y3"},
 
-// CICLO CLINICO
-{id:"toxico",name:"Toxicología",col:"Ciclo Clínico",req:["farmaco1"]},
-{id:"farmaco2",name:"Farmacología II",col:"Ciclo Clínico",req:["farmaco1","medicinaA"]},
-{id:"legal",name:"Medicina Legal y Deontología",col:"Ciclo Clínico",req:[]},
+// clínico
+{id:"toxico",name:"Toxicología",req:["farm1"],group:"clin"},
+{id:"farm2",name:"Farmacología II",req:["farm1","medA"],group:"clin"},
+{id:"legal",name:"Medicina Legal",group:"clin"},
 
-// 4° AÑO
-{id:"medicinaB",name:"Medicina B",col:"4° Año",req:["medicinaA","patologia"]},
-{id:"nutricion",name:"Nutrición",col:"4° Año",req:["medicinaA","patologia"]},
-{id:"derma",name:"Dermatología",col:"4° Año",req:["medicinaA","patologia"]},
-{id:"infecto",name:"Infectología",col:"4° Año",req:["medicinaA","patologia"]},
-{id:"neumo",name:"Neumonología",col:"4° Año",req:["medicinaA","patologia"]},
-{id:"neuro",name:"Neurología",col:"4° Año",req:["medicinaA","patologia"]},
-{id:"imagenes",name:"Diagnóstico por Imágenes",col:"4° Año",req:["medicinaA","patologia"]},
-{id:"psiquiatria",name:"Psiquiatría",col:"4° Año",req:["medicinaA","patologia","saludmental"]},
+// 4
+{id:"medB",name:"Medicina B",req:["medA","patologia"],group:"y4"},
+{id:"nutricion",name:"Nutrición",req:["medA","patologia"],group:"y4"},
+{id:"derma",name:"Dermatología",req:["medA","patologia"],group:"y4"},
+{id:"infecto",name:"Infectología",req:["medA","patologia"],group:"y4"},
+{id:"neumo",name:"Neumonología",req:["medA","patologia"],group:"y4"},
+{id:"neuro",name:"Neurología",req:["medA","patologia"],group:"y4"},
+{id:"imagenes",name:"Diagnóstico por Imágenes",req:["medA","patologia"],group:"y4"},
+{id:"psiquiatria",name:"Psiquiatría",req:["medA","patologia","saludmental"],group:"y4"},
 
-// 5° AÑO
-{id:"pediatria",name:"Pediatría",col:"5° Año",req:["medicinaA","patologia"]},
-{id:"obste",name:"Obstetricia",col:"5° Año",req:["medicinaA","patologia"]},
-{id:"gine",name:"Ginecología",col:"5° Año",req:["medicinaA","patologia"]},
-{id:"cirugia",name:"Cirugía General",col:"5° Año",req:["medicinaA","patologia"]},
-{id:"uro",name:"Urología",col:"5° Año",req:["medicinaA","patologia"]},
-{id:"trauma",name:"Ortopedia-Traumatología",col:"5° Año",req:["medicinaA","patologia"]},
-{id:"oftalmo",name:"Oftalmología",col:"5° Año",req:["medicinaA","patologia"]},
-{id:"orl",name:"Otorrinolaringología",col:"5° Año",req:["medicinaA","patologia"]},
-{id:"neurocir",name:"Neurocirugía",col:"5° Año",req:["medicinaA","patologia"]},
+// 5
+{id:"pediatria",name:"Pediatría",req:["medA","patologia"],group:"y5"},
+{id:"obste",name:"Obstetricia",req:["medA","patologia"],group:"y5"},
+{id:"gine",name:"Ginecología",req:["medA","patologia"],group:"y5"},
+{id:"cirugia",name:"Cirugía General",req:["medA","patologia"],group:"y5"},
+{id:"uro",name:"Urología",req:["medA","patologia"],group:"y5"},
+{id:"trauma",name:"Traumatología",req:["medA","patologia"],group:"y5"},
+{id:"oftalmo",name:"Oftalmología",req:["medA","patologia"],group:"y5"},
+{id:"orl",name:"Otorrino",req:["medA","patologia"],group:"y5"},
+{id:"neurocir",name:"Neurocirugía",req:["medA","patologia"],group:"y5"},
 
 // PFO
-{id:"familiar",name:"Medicina Familiar",col:"PFO",req:["ALL"]},
-{id:"emergen",name:"Emergentología",col:"PFO",req:["ALL"]},
-{id:"comunitaria",name:"Prácticas Comunitarias",col:"PFO",req:["ALL"]},
+{id:"familiar",name:"Medicina Familiar",req:["ALL"],group:"pfo"},
+{id:"emergen",name:"Emergentología",req:["ALL"],group:"pfo"},
+{id:"comunitaria",name:"Prácticas Comunitarias",req:["ALL"],group:"pfo"},
 ];
 
-function CBCcomplete(){
- return subjects.filter(s=>s.col==="CBC").every(s=>ok(s.id));
-}
-function BIOMEDcomplete(){
- return subjects.filter(s=>s.col.includes("Biomédico")).every(s=>ok(s.id));
-}
-function ALLcomplete(){
- return subjects.every(s=>ok(s.id));
-}
+// reglas
+function CBCok(){return subjects.filter(s=>s.group==="cbc").every(s=>ok(s.id));}
+function BIOMEDok(){return subjects.filter(s=>s.group==="bio1"||s.group==="bio2").every(s=>ok(s.id));}
+function ALLok(){return subjects.every(s=>ok(s.id));}
 
 function unlocked(sub){
+ if(!sub.req) return true;
  return sub.req.every(r=>{
-  if(r==="CBC") return CBCcomplete();
-  if(r==="BIOMED") return BIOMEDcomplete();
-  if(r==="ALL") return ALLcomplete();
+  if(r==="CBC") return CBCok();
+  if(r==="BIOMED") return BIOMEDok();
+  if(r==="ALL") return ALLok();
   return ok(r);
  });
 }
 
-function missing(sub){
- if(sub.req.includes("CBC") && !CBCcomplete()) return "Falta CBC";
- if(sub.req.includes("BIOMED") && !BIOMEDcomplete()) return "Falta ciclo biomédico";
- if(sub.req.includes("ALL") && !ALLcomplete()) return "Falta toda la carrera";
- return "Faltan correlativas";
+function renderBlock(title,list){
+ let html=`<div class="block"><h3>${title}</h3>`;
+ list.forEach(sub=>{
+  let cls="subject";
+  if(ok(sub.id)) cls+=" approved";
+  else if(!unlocked(sub)) cls+=" locked";
+  html+=`<div class="${cls}" title="Faltan correlativas" onclick="toggle('${sub.id}')">${sub.name}</div>`;
+ });
+ html+="</div>";
+ return html;
+}
+
+function toggle(id){
+ const sub=subjects.find(s=>s.id===id);
+ if(!unlocked(sub)) return;
+ progress[id]=!ok(id);
+ save();
+ render();
 }
 
 function render(){
- const grid=document.getElementById("grid");
- grid.innerHTML="";
- const cols=[...new Set(subjects.map(s=>s.col))];
+ const g=document.getElementById("grid");
+ g.innerHTML=`
+ <div class="col">
+ ${renderBlock("CBC",subjects.filter(s=>s.group==="cbc"))}
+ ${renderBlock("Complementarias",subjects.filter(s=>s.group==="comp"))}
+ </div>
 
- cols.forEach(c=>{
-  const col=document.createElement("div");
-  col.className="column";
-  col.innerHTML=`<h2>${c}</h2>`;
+ <div class="col">
+ ${renderBlock("Biomédico – 1° Año",subjects.filter(s=>s.group==="bio1"))}
+ ${renderBlock("Biomédico – 2° Año",subjects.filter(s=>s.group==="bio2"))}
+ </div>
 
-  subjects.filter(s=>s.col===c).forEach(sub=>{
-   const d=document.createElement("div");
-   d.className="subject";
-   d.innerText=sub.name;
+ <div class="col">
+ ${renderBlock("3° Año",subjects.filter(s=>s.group==="y3"))}
+ ${renderBlock("Ciclo Clínico",subjects.filter(s=>s.group==="clin"))}
+ </div>
 
-   if(ok(sub.id)) d.classList.add("approved");
-   else if(!unlocked(sub)){
-    d.classList.add("locked");
-    d.title=missing(sub);
-   }
+ <div class="col">
+ ${renderBlock("4° Año – Clínicas",subjects.filter(s=>s.group==="y4"))}
+ </div>
 
-   d.onclick=()=>{
-    if(!unlocked(sub)) return;
-    progress[sub.id]=!ok(sub.id);
-    save();
-    render();
-   };
-
-   col.appendChild(d);
-  });
-
-  grid.appendChild(col);
- });
+ <div class="col">
+ ${renderBlock("5° Año – Quirúrgicas",subjects.filter(s=>s.group==="y5"))}
+ ${renderBlock("PFO",subjects.filter(s=>s.group==="pfo"))}
+ </div>
+ `;
 }
 
 render();
 </script>
+
 </body>
 </html>
